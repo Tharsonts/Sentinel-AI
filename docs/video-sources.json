@@ -1,0 +1,42 @@
+[
+  {
+    "name": "opencv-pedestrians.avi",
+    "url": "https://raw.githubusercontent.com/opencv/opencv/4.x/samples/data/vtest.avi",
+    "sha256": "45cddc9490be69345cbdab64ca583be65987e864ca408038e648db99e10516cf",
+    "frames": 795,
+    "fps": 10.0,
+    "duration": 79.5
+  },
+  {
+    "name": "intel-people.mp4",
+    "url": "https://raw.githubusercontent.com/intel-iot-devkit/sample-videos/master/people-detection.mp4",
+    "sha256": "18ffe8672d741e3e29c9d891d22c59d453720b086c25b35c88b393d55f92f693",
+    "frames": 596,
+    "fps": 12.0,
+    "duration": 49.666666666666664
+  },
+  {
+    "name": "intel-traffic.mp4",
+    "url": "https://raw.githubusercontent.com/intel-iot-devkit/sample-videos/master/person-bicycle-car-detection.mp4",
+    "sha256": "452b11b7e0efbd019f1d9570d0c790e90416ad4ad29eec6003872d08443140ef",
+    "frames": 647,
+    "fps": 12.0,
+    "duration": 53.916666666666664
+  },
+  {
+    "name": "intel-cars.mp4",
+    "url": "https://raw.githubusercontent.com/intel-iot-devkit/sample-videos/master/car-detection.mp4",
+    "sha256": "d31e0ebf194cc16e50eea784e7c3b0b1bb7976a4fb9b3fec26cb92a6704cca34",
+    "frames": 377,
+    "fps": 12.5,
+    "duration": 30.16
+  },
+  {
+    "name": "roboflow-vehicles.mp4",
+    "url": "https://media.roboflow.com/supervision/video-examples/vehicles.mp4",
+    "sha256": "ac81100d9310bd4e9c02bc0b13b6492781d009742ced347766b2601be3c44ad4",
+    "frames": 538,
+    "fps": 25.0,
+    "duration": 21.52
+  }
+]

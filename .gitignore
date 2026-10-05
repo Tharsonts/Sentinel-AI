@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+data/
+models/
+cache/
+work/
+.pytest_cache/
+*.log
+
+config/*.local.json
