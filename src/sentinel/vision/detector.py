@@ -5,15 +5,15 @@ import time,tempfile
 from sentinel.config import ROOT
 class YoloTracker:
     def __init__(self,settings):
-        if not Path(settings.model_name).is_file():raise ValueError("Pesos YOLO ausentes. Configure MODEL_NAME com arquivo local; download automático desabilitado.")
+        if not Path(settings.model_name).is_file():raise ValueError("Pesos YOLO ausentes. Configure MODEL_NAME com arquivo local; download automÃ¡tico desabilitado.")
         from ultralytics import YOLO
         self.model=YOLO(settings.model_name); self.settings=settings
         specialist_path=getattr(settings,'person_specialist_model_name','')
         if specialist_path and not Path(specialist_path).is_file():
-            raise ValueError('Pesos do reforço de pessoas ausentes; configure um arquivo local válido.')
+            raise ValueError('Pesos do reforÃ§o de pessoas ausentes; configure um arquivo local vÃ¡lido.')
         self.specialist=YOLO(specialist_path) if specialist_path else None
         if self.specialist is not None and self.specialist.names!={0:'person'}:
-            raise ValueError('O reforço deve ser um detector treinado exclusivamente para person.')
+            raise ValueError('O reforÃ§o deve ser um detector treinado exclusivamente para person.')
         self.fusion_tracker=None
         self.options={'scope':'objects','quality':'balanced','confidence':settings.confidence}
         self.overlay=TrackOverlay();self.observations=[]
@@ -67,15 +67,16 @@ class YoloTracker:
         from sentinel.vision.fusion import supplement_people
         kwargs=dict(device=self.settings.device,imgsz=QUALITIES[self.options['quality']],conf=.1,verbose=False)
         result=self.model.predict(frame,classes=SCOPES[self.options['scope']],**kwargs)[0]
-        if self.options['scope']=='person':
+        if SCOPES[self.options['scope']] is None or 0 in SCOPES[self.options['scope']]:
             trained=self.specialist.predict(frame,classes=[0],**kwargs)[0]
             def unpack(boxes):
                 if boxes is None:return []
                 cpu=boxes.cpu().numpy()
-                return list(zip(cpu.xyxy.tolist(),cpu.conf.tolist()))
+                return [(box,score) for box,score,cls in zip(cpu.xyxy.tolist(),cpu.conf.tolist(),cpu.cls.tolist()) if int(cls)==0]
             combined=supplement_people(unpack(result.boxes),unpack(trained.boxes),
                 max(threshold,self.settings.person_specialist_threshold),base_threshold=threshold)
-            values=np.asarray([[*box,score,0] for box,score in combined],dtype=np.float32).reshape(-1,6)
+            other=result.boxes.cpu().numpy().data.tolist() if result.boxes is not None else []
+            values=np.asarray([[*box,score,0] for box,score in combined]+[row for row in other if int(row[5])!=0],dtype=np.float32).reshape(-1,6)
             result.boxes=Boxes(values,frame.shape[:2])
         if self.fusion_tracker is None:
             self.fusion_tracker=BYTETracker(SimpleNamespace(track_high_thresh=threshold,track_low_thresh=.1,

@@ -69,7 +69,7 @@ def detection_options():
     from sentinel.vision.overlay import SCOPES,QUALITIES
     with pipeline.lock:options=dict(pipeline.detection_options)
     specialist=settings.person_specialist_model_name
-    return {'options':options,'input_sizes':QUALITIES,'category_counts':{k:len(v) if v else 80 for k,v in SCOPES.items()},'model':Path(settings.model_name).name,'person_specialist':Path(specialist).name if specialist else None,'person_specialist_active':bool(specialist and options['scope']=='person'),'person_specialist_threshold':settings.person_specialist_threshold,'pose_available':Path(settings.pose_model_name).is_file(),'note':'Confiança do detector não é precisão medida. Proximidade ao punho não confirma objeto na mão; o modelo padrão não reconhece armas de fogo.'}
+    return {'options':options,'input_sizes':QUALITIES,'category_counts':{k:len(v) if v else 80 for k,v in SCOPES.items()},'model':Path(settings.model_name).name,'person_specialist':Path(specialist).name if specialist else None,'person_specialist_active':bool(specialist),'person_specialist_threshold':settings.person_specialist_threshold,'pose_available':Path(settings.pose_model_name).is_file(),'note':'Confiança do detector não é precisão medida. Proximidade ao punho não confirma objeto na mão; o modelo padrão não reconhece armas de fogo.'}
 
 @app.put('/detection/options',dependencies=[secure])
 def set_detection_options(body:DetectionOptions):
@@ -359,10 +359,14 @@ def analyze_visual(body:VisualRequest):
 def visual_report(session_id:str=Query(min_length=1,max_length=64)):
     return repo.visual_report(session_id)
 @app.get('/visual/frames/{id}',dependencies=[secure])
-def visual_frame(id:str):
-    image=repo.visual_image(id)
+def visual_frame(id:str,processed:bool=False):
+    image=repo.visual_processed_image(id) if processed else repo.visual_image(id)
     if image is None:raise HTTPException(404,'Imagem visual não disponível.')
     return Response(image,media_type='image/jpeg',headers={'Cache-Control':'no-store'})
+@app.get('/sessions/{session_id}/replay',dependencies=[secure])
+def session_replay(session_id:str,offset:int=Query(default=0,ge=0),limit:int=Query(default=5000,ge=1,le=5000)):
+    if not repo.session(session_id):raise HTTPException(404,'Execução inexistente.')
+    return repo.replay(session_id,offset,limit)
 @app.get('/media/catalog',dependencies=[secure])
 def media_catalog():
     return [{'filename':p.name,'name':repo.media_name(p.name)} for p in sorted(Path(settings.media_dir).iterdir()) if p.suffix.lower() in {'.mp4','.avi','.mov','.mkv','.webm'}]

@@ -21,6 +21,8 @@ class Repository:
             if 'offset_seconds' not in {row[1] for row in c.execute('PRAGMA table_info(visual_frames)')}:c.execute('ALTER TABLE visual_frames ADD COLUMN offset_seconds REAL')
             c.execute("CREATE INDEX IF NOT EXISTS visual_session_time ON visual_frames(session_id,timestamp)")
             c.execute("CREATE TABLE IF NOT EXISTS visual_reports (session_id TEXT PRIMARY KEY,status TEXT,result TEXT,error TEXT,updated_at TEXT)")
+            if 'annotated' not in {row[1] for row in c.execute('PRAGMA table_info(visual_frames)')}:c.execute('ALTER TABLE visual_frames ADD COLUMN annotated BLOB')
+            c.execute('CREATE TABLE IF NOT EXISTS replay_frames (session_id TEXT,offset_seconds REAL,data TEXT,PRIMARY KEY(session_id,offset_seconds))')
             c.execute("CREATE TABLE IF NOT EXISTS media_names (filename TEXT PRIMARY KEY,name TEXT)")
             c.execute("CREATE TABLE IF NOT EXISTS event_reviews (id INTEGER PRIMARY KEY AUTOINCREMENT,event_id TEXT NOT NULL,verdict TEXT NOT NULL,note TEXT NOT NULL,created_at TEXT NOT NULL)")
             c.execute("CREATE INDEX IF NOT EXISTS reviews_event ON event_reviews(event_id,id)")
@@ -67,6 +69,18 @@ class Repository:
         with self.connect() as c:
             row=c.execute('SELECT jpeg FROM visual_frames WHERE id=?',(id,)).fetchone()
             return bytes(row[0]) if row else None
+    def visual_annotate(self,id,jpeg):
+        with self.connect() as c:c.execute('UPDATE visual_frames SET annotated=? WHERE id=?',(sqlite3.Binary(jpeg),id))
+    def visual_processed_image(self,id):
+        with self.connect() as c:row=c.execute('SELECT annotated FROM visual_frames WHERE id=?',(id,)).fetchone()
+        return bytes(row[0]) if row and row[0] else None
+    def replay_save(self,session_id,offset_seconds,width,height,objects,zones):
+        data=dict(offset_seconds=offset_seconds,width=width,height=height,objects=objects,zones=zones)
+        with self.connect() as c:c.execute('INSERT OR REPLACE INTO replay_frames VALUES (?,?,?)',(session_id,offset_seconds,json.dumps(data,ensure_ascii=False)))
+    def replay(self,session_id,offset=0,limit=5000):
+        with self.connect() as c:
+            rows=c.execute('SELECT data FROM replay_frames WHERE session_id=? ORDER BY offset_seconds LIMIT ? OFFSET ?',(session_id,limit+1,offset)).fetchall()
+        return dict(items=[json.loads(r[0]) for r in rows[:limit]],has_more=len(rows)>limit)
     def visual_report(self,session_id):
         with self.connect() as c:row=c.execute('SELECT * FROM visual_reports WHERE session_id=?',(session_id,)).fetchone()
         if not row:return {'session_id':session_id,'status':'not_analyzed'}

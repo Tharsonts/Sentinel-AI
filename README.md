@@ -32,7 +32,25 @@ flowchart LR
 
 ## Demonstração
 
-As capturas de registros e da resposta visual serão adicionadas após selecionar uma gravação que possa ser exibida publicamente. Não há dados de usuários, vídeos de terceiros ou respostas inventadas neste repositório.
+### Vídeo com detecções e resposta da IA
+
+![Painel real com vídeo, rastros, poses e resposta da IA](docs/images/painel-com-analise.gif)
+
+Gravação da página real: vídeo público de teste sendo reproduzido com detecções registradas, rastros e pose. Ao lado, a resposta real da IA sobre 12 imagens amostradas da mesma sessão. A resposta foi gerada após processar o vídeo; o GIF não representa geração de uma resposta por quadro.
+
+### Veículos e rastros por objeto
+
+![Teste de trânsito com caixas, rastros e resposta real](docs/images/transito-com-analise.png)
+
+Perfil ampliado para pessoas, veículos e itens. As cores ajudam a distinguir IDs temporários e o último rastro desaparece após três segundos. Isso não identifica indivíduos nem valida retirada de produtos ou furto.
+
+### Registros com evidência
+
+![Pesquisa de registros e imagem anotada para conferência](docs/images/registros-com-evidencia.png)
+
+Os registros automáticos são separados da interpretação da IA. A imagem associada permite conferir uma detecção; encerramento e perda de tracking podem não ter imagem.
+
+Fonte da gravação: [Intel IoT DevKit sample-videos](https://github.com/intel-iot-devkit/sample-videos). Consulte [o registro da demonstração](docs/demo-validation.md) para escopo e atribuição.
 
 Para avaliar o código, não é necessário instalar os modelos. Para executar a análise completa, é necessário um computador com Python, modelos de visão e, para a resposta visual, um modelo multimodal local compatível. O GitHub apresenta o projeto; não hospeda o processamento de câmera.
 
@@ -68,7 +86,7 @@ Abra **http://127.0.0.1:8000/**. Use a chave configurada no acesso ao servidor. 
 1. Na configuração da fonte, escolha **Vídeo gravado**.
 2. Selecione o arquivo e envie o vídeo; aguarde a confirmação.
 3. Escolha o vídeo enviado e inicie o processamento.
-4. Acompanhe a imagem e os registros. Depois selecione a sessão correspondente para consultar a análise visual.
+4. Acompanhe o vídeo com detecções e os registros. A reprodução continua em loop após o processamento. Selecione uma imagem F1/F2 para repetir até três segundos antes e depois; o botão de análise usa esse mesmo trecho.
 5. Pergunte, por exemplo: **“Descreva as ações visíveis e cite os quadros que sustentam sua descrição.”**
 
 Há referências de amostras públicas em [docs/video-sources.json](docs/video-sources.json). Use gravações próprias ou com autorização; os vídeos não são redistribuídos aqui. Arquivos maiores que o limite de upload precisam ser reduzidos ou configurados localmente.

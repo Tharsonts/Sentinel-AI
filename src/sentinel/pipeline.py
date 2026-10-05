@@ -171,6 +171,7 @@ class Pipeline:
                 frame=cv2.resize(frame,(max(1,round(width*scale)),max(1,round(height*scale))),interpolation=cv2.INTER_AREA)
 
             capture_time=timestamp if timestamp is not None else time.time()
+            sample_id=None
 
             interval=self.state.get('visual_interval_seconds',getattr(self.settings,'visual_sample_seconds',2))
             if self.last_visual_at is None or capture_time-self.last_visual_at>=interval-1e-6:
@@ -184,7 +185,8 @@ class Pipeline:
                 if encoded_ok:
 
                     offset=max(0,capture_time-self.state['source_started_at']) if self.state.get('kind')=='file' and 'source_started_at' in self.state else None
-                    self.repo.visual_save(str(uuid4()),self.state.get('session_id',self.engine.session),self.state.get('camera',self.engine.camera),datetime.fromtimestamp(capture_time,timezone.utc).isoformat(),raw_jpeg.tobytes(),getattr(self.settings,'visual_frames_per_session',1200),offset_seconds=offset)
+                    sample_id=str(uuid4())
+                    self.repo.visual_save(sample_id,self.state.get('session_id',self.engine.session),self.state.get('camera',self.engine.camera),datetime.fromtimestamp(capture_time,timezone.utc).isoformat(),raw_jpeg.tobytes(),getattr(self.settings,'visual_frames_per_session',1200),offset_seconds=offset)
 
                     self.last_visual_at=capture_time
 
@@ -198,6 +200,10 @@ class Pipeline:
             self.state['detection_options']=dict(self.detection_options)
 
             h,w=frame.shape[:2]; events=self.engine.update(detections,w,h,timestamp or time.time())
+            if self.state.get('kind')=='file' and 'source_started_at' in self.state:
+                offset=max(0,capture_time-self.state['source_started_at'])
+                self.repo.replay_save(self.state.get('session_id',self.engine.session),offset,w,h,self.state['observations'],[dict(name=z.name,polygon=z.polygon) for z in self.engine.zones])
+                for event in events:event.setdefault('metadata',{})['offset_seconds']=offset
 
             for z in self.engine.zones:
 
@@ -210,6 +216,7 @@ class Pipeline:
             ok,encoded=cv2.imencode(".jpg",annotated,[cv2.IMWRITE_JPEG_QUALITY,80])
 
             if ok:self.jpg=encoded.tobytes()
+            if ok and sample_id:self.repo.visual_annotate(sample_id,encoded.tobytes())
 
             # Only a current processed frame can be evidence of these events.
 

@@ -26,12 +26,12 @@ def test_specialist_people_enter_same_tracker_and_keep_ids():
     assert first.id.tolist()==second.id.tolist()
     assert first.cls.tolist()==[0,0]
 
-def test_other_scopes_keep_generic_classes_without_specialist():
+def test_objects_scope_keeps_car_and_specialist_people():
     tracker=make_tracker();tracker.options['scope']='objects'
     tracker.model=Model([[10,10,40,70,.8,2]])
     result=tracker._process_fused(np.zeros((100,100,3),np.uint8),.45)
-    assert result.boxes.cls.tolist()==[2]
-    assert tracker.specialist.calls==[]
+    assert sorted(result.boxes.cls.tolist())==[0,2]
+    assert len(tracker.specialist.calls)==1
 
 def test_empty_fusion_is_valid_tracker_input():
     tracker=make_tracker();tracker.model=Model([]);tracker.specialist=Model([])
