@@ -104,6 +104,24 @@ O reforço aumentou a cobertura nesse recorte, mas ainda houve 5.931 omissões e
 
 Veja [protocolo e limites do treinamento](docs/person-training.md), [avaliações anteriores](docs/trust-validation.md) e [proposta de busca com evidências](docs/search-product.md). Os arquivos brutos, datasets e checkpoints locais não são distribuídos; os relatórios documentam o experimento e não constituem um pacote completo de reprodução do treinamento.
 
+### Avaliação inicial de armas e supermercado
+
+Foram realizados poucos testes de cenários relacionados a armas e interação com produtos. Um detector experimental foi treinado por 16 épocas com 1.031 imagens e avaliado em 607 imagens de uma câmera reservada. As câmeras pertencem ao mesmo cenário encenado; atores e objetos podem se repetir. Isso limita a generalização dos resultados.
+
+| Objeto | Acertos | Falsos positivos | Omissões | Precisão | Cobertura |
+|---|---:|---:|---:|---:|---:|
+| Pistola | 97 | 86 | 163 | 53,0% | 37,3% |
+| Faca | 0 | 42 | 13 | 0% | 0% |
+| Arma longa | 80 | 21 | 140 | 79,2% | 36,4% |
+
+As contagens são caixas por quadro, não armas únicas. Precisão significa acertos entre as detecções; cobertura significa objetos anotados encontrados. A comparação usa IoU ≥ 0,5. Os limiares foram escolhidos na validação, congelados antes do teste e usados apenas para diagnóstico; nenhuma classe atingiu o requisito de precisão na validação.
+
+Também foram avaliados seis vídeos de interação com prateleiras e retirada/ocultação encenada de itens, amostrados a dois quadros por segundo, e 14 imagens externas com armas e objetos parecidos. O candidato produziu possíveis armas em todos os quadros amostrados dos dois vídeos de prateleiras e não encontrou as pistolas e facas anotadas no pequeno teste externo. Não há validação de acompanhamento preciso do item levado à roupa nem de detecção de furto.
+
+**O detector experimental foi reprovado para ativação e não integra a versão publicada.** Os testes não comprovam reconhecimento de assalto, furto ou arma real. Os pesos e vídeos não são redistribuídos. São necessários dados mais diversos, produtos e mãos anotados, negativos como celulares e ferramentas, além de novos testes independentes antes de alertas operacionais.
+
+Fontes de pesquisa: [US Mock Attack](https://deepknowledge-us.github.io/US-Real-time-gun-detection-in-CCTV-An-open-problem-dataset/), [MERL Shopping](https://www.merl.com/research/highlights/merl-shopping-dataset), [MNNIT Shoplifting](https://data.mendeley.com/datasets/r3yjf35hzr/1) e [Sohas](https://github.com/ari-dasci/OD-WeaponDetection). Os cenários de ataque/ocultação utilizados são encenados; não constituem comprovação de crimes reais.
+
 ### Testes de software
 
 ```powershell
